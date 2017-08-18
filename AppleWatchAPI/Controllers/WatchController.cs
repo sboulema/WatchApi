@@ -6,7 +6,7 @@ using AppleWatchAPI.Models;
 
 namespace AppleWatchAPI.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("/")]
     public class WatchController : Controller
     {
         private HttpClient _client;
