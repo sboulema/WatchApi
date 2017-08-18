@@ -11,6 +11,12 @@ namespace AppleWatchAPI.Controllers
     {
         private HttpClient _client;
 
+        [HttpGet()]
+        public string Get() 
+        {
+            return "PM Watch Api"
+        }
+
         [HttpGet("{refreshToken}/{latitude}/{longitude}")]
         public object Get(string refreshToken, string latitude, string longitude)
         {
