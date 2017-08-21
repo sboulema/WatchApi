@@ -59,7 +59,7 @@ namespace AppleWatchAPI.Controllers
             {
                 return GetClient(null);
             }
-            return GetClient(accessToken["token"]);
+            return GetClient(accessToken["token"].ToString());
         }
 
         private HttpClient GetClient(string accessToken)
