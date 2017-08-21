@@ -19,7 +19,7 @@ namespace AppleWatchAPI.Controllers
         {
             _client = GetClient(accessToken);
 
-            var result = new Result { AccessToken = accessToken };
+            var result = new Result();
 
             return GetResult(result, latitude, longitude);
         }
@@ -27,11 +27,11 @@ namespace AppleWatchAPI.Controllers
         [HttpGet("refresh/{refreshToken}/{latitude}/{longitude}")]
         public Result GetWithRefreshToken(string refreshToken, string latitude, string longitude)
         {
-            _client = GetClient();
+            _client = GetClient(null);
 
             var accessToken = GetAccessToken(refreshToken);
 
-            _client = GetClient(accessToken.ToString());
+            _client = GetClient(accessToken);
 
             var result = new Result() { AccessToken = accessToken };
 
@@ -53,17 +53,31 @@ namespace AppleWatchAPI.Controllers
             return result;
         }
 
-        private HttpClient GetClient(string token = "")
+        private HttpClient GetClient(dynamic accessToken)
+        {
+            if (accessToken == null)
+            {
+                return GetClient(null);
+            }
+            return GetClient(accessToken["token"]);
+        }
+
+        private HttpClient GetClient(string accessToken)
         {
             var client = new HttpClient();
-            client.DefaultRequestHeaders.Add("PMAuthenticationToken", token);
+
+            if (!string.IsNullOrEmpty(accessToken))
+            {
+                client.DefaultRequestHeaders.Add("PMAuthenticationToken", accessToken);
+            }
+
             return client;
         }
 
         private object GetAccessToken(string refreshToken)
         {
             var json = PostJson("http://parknow.preprod.parkmobile.nl/api/token/refresh", $"{{\"RefreshToken\":\"{refreshToken}\"}}");
-            return JObject.Parse(json)["token"];
+            return JObject.Parse(json);
         }
 
         private object GetActiveSession()
