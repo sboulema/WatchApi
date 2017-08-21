@@ -12,50 +12,38 @@ namespace AppleWatchAPI.Controllers
         private HttpClient _client;
 
         [HttpGet()]
-        public string Get() 
+        public string Get() => "PM Watch Api";
+
+        [HttpGet("access/{accessToken}/{latitude}/{longitude}")]
+        public Result GetWithAccessToken(string accessToken, string latitude, string longitude)
         {
-            return "PM Watch Api";
+            _client = GetClient(accessToken);
+
+            var result = new Result { AccessToken = accessToken };
+
+            return GetResult(result, latitude, longitude);
         }
 
-        [HttpGet("{refreshToken}/{latitude}/{longitude}")]
-        public object Get(string refreshToken, string latitude, string longitude)
+        [HttpGet("refresh/{refreshToken}/{latitude}/{longitude}")]
+        public Result GetWithRefreshToken(string refreshToken, string latitude, string longitude)
         {
             _client = GetClient();
 
-            //1. (Optionally)Refresh Access Token if it is expired
+            var accessToken = GetAccessToken(refreshToken);
 
-            var token = GetAccessToken(refreshToken);
+            _client = GetClient(accessToken.ToString());
 
-            _client = GetClient(token.ToString());
+            var result = new Result() { AccessToken = accessToken };
 
-            var result = new Result();
+            return GetResult(result, latitude, longitude);
+        }
 
-            //2. / parking / active – to get current sessions
-            //http://parknow.preprod.parkmobile.nl/api/parking/active?supplierid=349
-
+        private Result GetResult(Result result, string latitude, string longitude)
+        {
             result.Session = GetActiveSession();
-
-            //if there are current sessions – we are just displaying them, if not:
-            //3. / search / zones / with user’s location
-            //http://parknow.preprod.parkmobile.nl/api/search/zones?supplierid=349&lat=50.93847&maxresults=5&reverseGeocoder=true&lon=7.00743&radius=5
-
             result.Zones = GetNearbyZones(latitude, longitude);
-
-            //4. / vehicles /
-            //get users vehicles and assume the last one
-            //http://parknow.preprod.parkmobile.nl/api/account/vehicles?supplierid=349
-
             result.Vehicles = GetVehicles();
-
-            //5. / vehicles / lastused
-            //get user’s last vehicle
-            //http://parknow.preprod.parkmobile.nl/api/account/vehicles/lastused?supplierid=349
-
             result.VehicleLastUsed = GetLastVehicle();
-
-            //6. / zone /
-            //get zone details   for the first zone frome the nearbyzones list
-            //http://parknow.preprod.parkmobile.nl/api/parking/zone/500003?supplierid=349
 
             if (result.Zones[0]["internalZoneCode"] != null)
             {

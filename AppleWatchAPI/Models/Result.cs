@@ -7,5 +7,6 @@
         public dynamic Vehicles { get; set; }
         public dynamic VehicleLastUsed { get; set; }
         public dynamic Session { get; set; }
+        public dynamic AccessToken { get; internal set; }
     }
 }
